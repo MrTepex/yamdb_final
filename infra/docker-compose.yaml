@@ -8,7 +8,7 @@ services:
     env_file:
       - ./.env
   web:
-    image: bardabary/api_yamdb:v1.2
+    image: bardabary/api_yamdb:latest
     restart: always
     volumes:
       - static_value:/app/static/

@@ -1,29 +1,26 @@
-from django.db.models import Avg
+from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
+from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-
 from rest_framework import filters, mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework_simplejwt.views import TokenViewBase
 from rest_framework.views import APIView
-
-from reviews.models import Category, Genre, Title, Review
+from rest_framework_simplejwt.views import TokenViewBase
+from reviews.models import Category, Genre, Review, Title
 from users.models import User
-from .permissions import (IsAdminOrSuperuser, IsAdminOrReadOnly,
-                          IsAdminModeratorOwnerOrReadOnly,
-                          )
-from .serializers import (ReviewSerializer, CommentSerializer,
-                          CategorySerializer, GenreSerializer,
-                          TitleListSerializer, TitlePostSerializer,
-                          UserSerializer, APITokenObtainSerializer,
-                          UserSerializerSignUp)
+
 from .filters import TitleFilter
-from django.conf import settings
+from .permissions import (IsAdminModeratorOwnerOrReadOnly, IsAdminOrReadOnly,
+                          IsAdminOrSuperuser)
+from .serializers import (APITokenObtainSerializer, CategorySerializer,
+                          CommentSerializer, GenreSerializer, ReviewSerializer,
+                          TitleListSerializer, TitlePostSerializer,
+                          UserSerializer, UserSerializerSignUp)
 
 
 class CategoryViewSet(mixins.CreateModelMixin,
@@ -126,17 +123,15 @@ class APISignUpViewSet(APIView):
             user = serializer.save()
             self.send_code(user, email)
             return Response(serializer.data, status=status.HTTP_200_OK)
-        else:
-            user = get_object_or_404(User, email=email, username=username)
-            self.send_code(user, email)
-            response = {
-                'error': 'Пользователь уже зарегистрирован в системе!'
-            }
-            return Response(response, status=status.HTTP_400_BAD_REQUEST)
+        user = get_object_or_404(User, email=email, username=username)
+        self.send_code(user, email)
+        response = {
+            'error': 'Пользователь уже зарегистрирован в системе!'
+        }
+        return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserViewSet(viewsets.ModelViewSet):
-
     queryset = User.objects.all()
     serializer_class = UserSerializer
     lookup_field = 'username'
@@ -161,9 +156,9 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         role = serializer.validated_data.get('role')
         if (
-            request.method == 'PATCH'
-            and request.user.is_user
-            and role is not None
+                request.method == 'PATCH'
+                and request.user.is_user
+                and role is not None
         ):
             serializer = UserSerializer(request.user, many=False)
             return Response(serializer.data, status=status.HTTP_200_OK)

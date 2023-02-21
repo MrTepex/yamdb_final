@@ -1,6 +1,8 @@
 name: YAMDb workflow
 
-on: [push]
+on:
+  push:
+    branches: [ main ]
 
 jobs:
   tests:
@@ -24,9 +26,6 @@ jobs:
         python -m pytest
 
   build_and_push_to_docker_hub:
-    on:
-      push:
-        branches: [ main ]
     name: Push Docker image to Docker Hub
     runs-on: ubuntu-latest
     needs: tests

@@ -29,7 +29,6 @@ jobs:
     needs: tests
     steps:
       - name: Check out the repo
-        if: steps.branch-name.outputs == 'main'
         uses: actions/checkout@v2
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
